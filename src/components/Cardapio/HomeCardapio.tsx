@@ -1,10 +1,15 @@
 import { SyntheticEvent, useState } from "react"
-import { Button, ButtonGroup, ToggleButton } from "react-bootstrap"
+import { Button, ButtonGroup, Modal, ToggleButton } from "react-bootstrap"
 import styles from "./styles.module.scss"
-
+import { AiOutlineShoppingCart } from "react-icons/ai";
 
 export const HomeCardapio = () => {
   const [radioValue, setRadioValue] = useState<String>("")
+  const [itensCarrinho, setItensCarrinhos] = useState({ numero_de_pedidos: 0 })
+  const [show, setShow] = useState(false);
+
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
   const categorias = [
     { id: "12", value: "Tudo" },
     { id: "13", value: "Pizzas" },
@@ -41,10 +46,21 @@ export const HomeCardapio = () => {
       id: "455",
     },
   ]
-  const handleCategory = (event: SyntheticEvent) => {
-    console.log(event.target);
-    // const {value} = event.target
+  const handleCategory = (event: SyntheticEvent, id_comida: String) => {
+    const addCarrinho = itenscoimda.filter(item => {
+      if (item.id === id_comida) {
+        return item
+      }
+    })
+    let qtd = 0
+    const qtdPedidos = Object.keys(itensCarrinho).length
+
+    setItensCarrinhos({ ...itensCarrinho, [addCarrinho[0].id]: addCarrinho[0], numero_de_pedidos: qtdPedidos })
   }
+  const handlePedido = () => {
+    window.location.href = "https://api.whatsapp.com/send/?phone=5594988110021&text=Gostaria+de+saber+o+pre%C3%A7o+do+apartamento&app_absent=0"
+  }
+
   return (
 
     <section className={styles.containerCardapioHome}>
@@ -58,13 +74,13 @@ export const HomeCardapio = () => {
             name="radio"
             value={radio.value}
             checked={radioValue === radio.value}
-            className={radioValue === radio.value ? styles.ativo: ""}
+            className={radioValue === radio.value ? styles.ativo : ""}
             onChange={(e) => setRadioValue(e.currentTarget.value)}
           >
             {radio.value}
           </ToggleButton>
         ))}
-       
+
       </aside>
 
       {
@@ -80,12 +96,61 @@ export const HomeCardapio = () => {
                 <p>
                   {item.description}
                 </p>
-                <button value={item.id} type="button" onClick={handleCategory}>Adicionar</button>
+                <button value={item.id} type="button" onClick={(e) => handleCategory(e, item.id)}>Adicionar</button>
               </aside>
             </div>
           )
         })
       }
+      {itensCarrinho.numero_de_pedidos > 0 ?
+        <div className={styles.containerPedidos}>
+          <button onClick={handleShow}>
+            <AiOutlineShoppingCart />
+            Carrinho  <span>{itensCarrinho.numero_de_pedidos}</span>
+          </button>
+
+        </div>
+        : ""}
+
+      <>
+        <Modal
+          show={show}
+          onHide={handleClose}
+          backdrop="static"
+          keyboard={false}
+          aria-labelledby="contained-modal-title-vcenter"
+          centered
+          className={styles.modal}
+        >
+          <Modal.Header closeButton>
+
+            <Modal.Title>Finalizar Pedido</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            {Object.keys(itensCarrinho).map(item => {
+              console.log();
+
+              return (
+                <>
+                  <aside className={styles.itemModal}>
+                    <img src={itensCarrinho[item].image} alt={itensCarrinho[item].name} />
+                    <div>
+                      <h3>{itensCarrinho[item].name}</h3>
+                      <h3>{itensCarrinho[item].price}</h3>
+                    </div>
+                  </aside>
+                </>
+              )
+            })}
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={handleClose}>
+              Close
+            </Button>
+            <Button variant="success" onClick={handlePedido}>Finalizar Pedido</Button>
+          </Modal.Footer>
+        </Modal>
+      </>
     </section>
   )
 }

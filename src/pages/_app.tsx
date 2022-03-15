@@ -1,10 +1,10 @@
 import { AppProps } from "next/app"
-import { GlobalStyles } from "../../styles/global"
 import { Header } from "../components/Header/Header"
+import "../../styles/global.scss"
+
 function MyApp({ Component, pageProps }: AppProps) {
   return <>
     <Header />
-    <GlobalStyles/>
     <Component {...pageProps} />
   </>
 }
