@@ -71,9 +71,8 @@ export const HomeCardapio = ({ listProduct }: List) => {
     const handlePedido = () => {
         console.log(itensCarrinho);
         let txt = "Pedido:", total = 0
+        txt += `%20%0A`
         itensCarrinho.forEach(item=>{
-            txt += `%20%0A`
-            txt += `%20%0A`
             txt += `%20%0A${item["quantidade"]}x%20${item["name"]}%20%20`
             txt += `----%20%20%20${new Intl.NumberFormat('pt-BR', {
                 style: 'currency',
