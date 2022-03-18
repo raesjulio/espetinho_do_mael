@@ -70,12 +70,22 @@ export const HomeCardapio = ({ listProduct }: List) => {
     }
     const handlePedido = () => {
         console.log(itensCarrinho);
-        let txt = "Pedido:"
+        let txt = "Pedido:", total = 0
         itensCarrinho.forEach(item=>{
-            txt += `%20%0A${item["quantidade"]}x%20${item["name"]}`
-            txt += `%20%0A${item["price"]/100}`
+            txt += `%20%0A`
+            txt += `%20%0A`
+            txt += `%20%0A${item["quantidade"]}x%20${item["name"]}%20%20`
+            txt += `----%20%20%20${new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: "BRL"
+            }).format(item["price"]/100)}`
+            total+=item["price"]
         })
-        console.log(txt);
+        txt += `%20%0A`
+        txt += `%20%0ATOTAL:${new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: "BRL"
+        }).format(total/ 100)} `
         
         window.location.href = `https://api.whatsapp.com/send/?phone=5594988110021&text=${txt}&app_absent=0`
     }
@@ -148,9 +158,9 @@ export const HomeCardapio = ({ listProduct }: List) => {
                             <aside>
                                 <div>
                                     <h5>{item.name}</h5>
-                                    <h5>{new Intl.NumberFormat('en-US', {
+                                    <h5>{new Intl.NumberFormat('pt-BR', {
                                         style: 'currency',
-                                        currency: "USD"
+                                        currency: "BRL"
                                     }).format(item.price / 100)}</h5>
                                 </div>
                                 <p>
