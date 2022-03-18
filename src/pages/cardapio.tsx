@@ -4,27 +4,29 @@ import { HomeCardapio } from "../components/Cardapio/HomeCardapio";
 import { supabase } from "../utils/supabase";
 type ICardapio = {
   id: Number
-  nome: string
+  name: string
   descricao: string
-  preco: Number
+  image: string
+  price: Number
   disponivel: boolean
+  ingredientes: string
 }
 interface List {
-  listProduct:[{
+  listProduct: [{
     id: Number
-    nome: string
+    name: string
     descricao: string
-    preco: Number
+    image: string
+    price: Number
     disponivel: boolean
+    ingredientes: string
   }]
 }
 
-export default function Cardapio({ listProduct}: List) {
-  console.log(listProduct);
-  
-  return (
+export default function Cardapio({ listProduct }: List) {
+    return (
     <>
-      <HomeCardapio />
+      <HomeCardapio listProduct={listProduct} />
     </>
   )
 }
