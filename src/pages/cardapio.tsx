@@ -20,24 +20,35 @@ interface List {
     price: Number
     disponivel: boolean
     ingredientes: string
+  }],
+  listCategoria: [{
+    id_category: Number;
+    name: String
   }]
 }
-
-export default function Cardapio({ listProduct }: List) {
-    return (
+interface ICategory {
+  id_category: Number;
+  name: String
+}
+export default function Cardapio({ listProduct, listCategoria }: List) {
+  return (
     <>
-      <HomeCardapio listProduct={listProduct} />
+      <HomeCardapio listProduct={listProduct} listCategoria={listCategoria} />
     </>
   )
 }
 
 export const getStaticProps: GetStaticProps = async () => {
-  const data = await supabase.from<ICardapio[]>("cardapio").select("*").then(response => {
+  const listCardapio = await supabase.from<ICardapio[]>("cardapio").select("*").then(response => {
+    return response.body
+  })
+  const listCategoria = await supabase.from<ICategory[]>("category").select("id_category, name").then(response => {
     return response.body
   })
   return {
     props: {
-      listProduct: data
+      listProduct: listCardapio,
+      listCategoria: listCategoria
     },
     revalidate: 60 * 60 * 24, //24horas
   }
