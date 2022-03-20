@@ -1,9 +1,10 @@
 import { SyntheticEvent, useEffect, useMemo, useState } from "react"
-import { Button, ButtonGroup, Modal, ToggleButton } from "react-bootstrap"
+import { Button, ButtonGroup, FloatingLabel, Form, Modal, ToggleButton } from "react-bootstrap"
 import styles from "./styles.module.scss"
 import { BsDashSquareFill, BsFillPlusSquareFill, BsFillTrashFill } from "react-icons/bs";
 import { AiOutlineShoppingCart } from "react-icons/ai";
 import { Vazio } from "../Vazio/Vazio";
+import MaskedInput from "react-maskedinput";
 interface List {
     listProduct: [{
         id: Number
@@ -47,7 +48,7 @@ export const HomeCardapio = (props: List) => {
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
     const [categorias, setCategorias] = useState([])
-
+    const [pedido, setPedido] = useState({ total: 0 })
     useEffect(() => {
         setItensComida(listProduct)
     }, [listProduct])
@@ -64,8 +65,18 @@ export const HomeCardapio = (props: List) => {
     }, [listCategoria])
     useMemo(() => {
         if (itensCarrinho.length > 0) {
+            const total = itensCarrinho.reduce((total, item) => {
+                return total + (item["price"] * item["quantidade"]);
+            }, 0)
+            console.log(total);
+
+            setPedido({ total })
+
             const qtdPedidos = itensCarrinho.length
             setNumeroPedidos(qtdPedidos)
+        } else {
+            setPedido({ total: 0 })
+            setNumeroPedidos(0)
         }
     }, [itensCarrinho])
 
@@ -98,15 +109,15 @@ export const HomeCardapio = (props: List) => {
             txt += `----%20%20%20${new Intl.NumberFormat('pt-BR', {
                 style: 'currency',
                 currency: "BRL"
-            }).format((item["price"] / 100)*item["quantidade"])}`
-            total += (item["price"] / 100)*item["quantidade"]
+            }).format((item["price"] / 100) * item["quantidade"])}`
+            total += (item["price"] / 100) * item["quantidade"]
         })
         txt += `%20%0A`
         txt += `%20%0ATOTAL:${new Intl.NumberFormat('pt-BR', {
             style: 'currency',
             currency: "BRL"
         }).format(total)} `
-        
+
         window.location.href = `https://api.whatsapp.com/send/?phone=5594988110021&text=${txt}&app_absent=0`
     }
     const adicionarQuantidadeCarrinho = (idComida: string) => {
@@ -117,6 +128,13 @@ export const HomeCardapio = (props: List) => {
             }
         })
         setItensCarrinhos(itensCarrinhosAux)
+    }
+    const calcularToTal = () => {
+        let total = 0
+        itensCarrinho.forEach(item => {
+            console.log(item);
+
+        })
     }
     const removerQuantidadeCarrinho = (idComida: string) => {
         let itensCarrinhosAux = itensCarrinho.map(item => item);
@@ -182,7 +200,7 @@ export const HomeCardapio = (props: List) => {
 
             </aside>
             <div className={styles.containeritensComida}>
-            {itensComida.length === 0 ? <Vazio/>:""}
+                {itensComida.length === 0 ? <Vazio /> : ""}
                 {
                     itensComida.map(item => {
                         return (
@@ -228,10 +246,13 @@ export const HomeCardapio = (props: List) => {
                     className={styles.modal}
                 >
                     <Modal.Header closeButton>
-                        <Modal.Title>Pedido</Modal.Title>
+
+                        <Modal.Title>
+                            <h4>Pedidos</h4>
+                        </Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
-                        {itensCarrinho.length === 0 ? <Vazio/>:""}
+                        {itensCarrinho.length === 0 ? <Vazio /> : ""}
                         {Object.keys(itensCarrinho).map((item) => {
                             return (
                                 <>
@@ -243,30 +264,70 @@ export const HomeCardapio = (props: List) => {
                                                 <h3>{itensCarrinho[item].name}</h3>
                                             </div>
                                             <aside>
+                                                <div>
+                                                    <button onClick={() => removerQuantidadeCarrinho(itensCarrinho[item].id)}>
+                                                        <BsDashSquareFill className={styles.remove} />
+                                                    </button>
+                                                    <input disabled type="text" value={itensCarrinho[item].quantidade} />
+                                                    <button onClick={() => adicionarQuantidadeCarrinho(itensCarrinho[item].id)}>
+                                                        <BsFillPlusSquareFill className={styles.add} />
+                                                    </button>
+                                                </div>
                                                 <h3>{new Intl.NumberFormat('pt-BR', {
                                                     style: 'currency',
                                                     currency: "BRL"
                                                 }).format((itensCarrinho[item].price * itensCarrinho[item].quantidade) / 100)}</h3>
-                                                <div>
-                                                    <button onClick={() => removerQuantidadeCarrinho(itensCarrinho[item].id)}>
-                                                        <BsDashSquareFill />
-                                                    </button>
-                                                    <input disabled type="text" value={itensCarrinho[item].quantidade} />
-                                                    <button onClick={() => adicionarQuantidadeCarrinho(itensCarrinho[item].id)}>
-                                                        <BsFillPlusSquareFill />
-                                                    </button>
 
-                                                </div>
 
                                             </aside>
                                             <a onClick={() => removeItemCarrinho(itensCarrinho[item].id)}>
                                                 <BsFillTrashFill /> Remover
                                             </a>
                                         </section>
+
                                     </aside>
                                 </>
                             )
                         })}
+                        <div className={styles.containerEntregaTotal}>
+                            <section>
+                                <Form.Check
+                                    type="checkbox"
+                                    id={`default-checkbox`}
+                                    label="PARA ENTREGA?"
+                                />
+
+                            </section>
+                            <div className={styles.containerTotal}>
+                                <div>
+                                    <h2>TOTAL </h2>
+                                    <h2>{new Intl.NumberFormat('pt-BR', {
+                                        style: 'currency',
+                                        currency: "BRL"
+                                    }).format(pedido.total / 100)}</h2>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div className={styles.containerInfoPedido}>
+                            <FloatingLabel
+                                controlId="floatingNomeCliente"
+                                label="Seu nome"
+                                className="mb-3"
+                            >
+                                <Form.Control type="text" placeholder="João" />
+                            </FloatingLabel>
+                            <FloatingLabel
+                                controlId="floatingNumeroWhatsapp"
+                                label="Whatsapp">
+                                <Form.Control as={MaskedInput}
+                                    mask="(11)11111-1111"
+                                    type="text"
+                                    placeholder="(94)99999-9999" />
+                            </FloatingLabel>
+
+                        </div>
                     </Modal.Body>
                     <Modal.Footer>
                         <Button variant="secondary" onClick={handleClose}>
