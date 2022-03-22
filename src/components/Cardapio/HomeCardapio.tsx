@@ -80,12 +80,12 @@ const initialInfoPedido = () => {
 }
 const initialValidaton = () => {
     return {
-        nome_cliente: false,
-        whatsapp: false,
-        nome_rua: false,
-        id_bairro: false,
-        numero_casa: false,
-        id_forma_pagamento: false
+        nome_cliente: null,
+        whatsapp: null,
+        nome_rua: null,
+        id_bairro: null,
+        numero_casa: null,
+        id_forma_pagamento: null
     }
 }
 export const HomeCardapio = (props: List) => {
@@ -298,7 +298,7 @@ export const HomeCardapio = (props: List) => {
     }, [infoPedido])
 
     console.log(infoPedido);
-    
+
     return (
         <section className={styles.containerCardapioHome}>
             <aside>
@@ -407,17 +407,48 @@ export const HomeCardapio = (props: List) => {
                                 </>
                             )
                         })}
+                        <aside className={styles.total}>
+                            <div>
+                                <h2>TOTAL </h2>
+                                <label>{new Intl.NumberFormat('pt-BR', {
+                                    style: 'currency',
+                                    currency: "BRL"
+                                }).format(pedido.total / 100)}</label>
+                            </div>
+                        </aside>
+                        
                         <FloatingLabel
-                            controlId="floatingBairro"
+                            controlId="floating"
                             label="Observação sobre o pedido?">
 
                             <Form.Control
-                                    className="mb-3"
+                                className="mb-3"
                                 type="text"
                                 name="obs"
                                 value={infoPedido?.obs}
                                 onChange={(e) => onChangeInfoPedido(e)}
                                 placeholder="Casa de esquina" />
+                        </FloatingLabel>
+                        <FloatingLabel controlId="floatingPagamento" label="Forma de pagamento">
+                            <Form.Select
+                                required
+                                value={infoPedido?.id_forma_pagamento}
+                                isInvalid={!validacao.id_forma_pagamento}
+                                isValid={validacao.id_forma_pagamento}
+                                className="mb-3"
+                                name="id_forma_pagamento"
+                                onChange={(e) => onChangeInfoPedido(e)}
+                                aria-label="opções">
+                                <option value="">-</option>
+                                {
+                                    formaPagamento.map(item => {
+                                        return <option value={item.id_forma_pagamento}>{item.nome_pagamento}</option>
+                                    })
+                                }
+                            </Form.Select>
+                            {/* <Form.Control.Feedback type="invalid">
+                                            insira a forma de pagamento
+                                        </Form.Control.Feedback> */}
                         </FloatingLabel>
                         <div className={styles.containerEntregaTotal}>
                             <section className={infoPedido.entrega ? styles.active : ""}>
@@ -428,41 +459,8 @@ export const HomeCardapio = (props: List) => {
                                     checked={infoPedido.entrega}
                                     onChange={handleEntrega}
                                 />
-
                             </section>
-                            <div className={styles.containerTotal}>
-                                <section>
-                                    <FloatingLabel controlId="floatingPagamento" label="Forma de pagamento">
-                                        <Form.Select
-                                            required
-                                            value={infoPedido?.id_forma_pagamento}
-                                            isInvalid={!validacao.id_forma_pagamento}
-                                            isValid={validacao.id_forma_pagamento}
-                                            name="id_forma_pagamento"
-                                            onChange={(e) => onChangeInfoPedido(e)}
-                                            aria-label="opções">
-                                            <option value="">-</option>
-                                            {
-                                                formaPagamento.map(item => {
-                                                    return <option value={item.id_forma_pagamento}>{item.nome_pagamento}</option>
-                                                })
-                                            }
-                                        </Form.Select>
-                                        <Form.Control.Feedback type="invalid">
-                                            insira a forma de pagamento
-                                        </Form.Control.Feedback>
-                                    </FloatingLabel>
-                                </section>
-                                <aside>
-                                    <div>
-                                        <h2>TOTAL </h2>
-                                        <label>{new Intl.NumberFormat('pt-BR', {
-                                            style: 'currency',
-                                            currency: "BRL"
-                                        }).format(pedido.total / 100)}</label>
-                                    </div>
-                                </aside>
-                            </div>
+                            
                         </div>
                         {infoPedido.entrega && <div className={styles.containerInfoEndereco}>
                             <div>

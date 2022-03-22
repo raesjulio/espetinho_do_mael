@@ -87,7 +87,7 @@ export const pedidos = {
             total += (item["price"] / 100) * item["quantidade"]
         })
         txt += `%20%0A`
-        txt += `%20%0ATOTAL:*%20${new Intl.NumberFormat('pt-BR', {
+        txt += `%20%0ATOTAL:%20*${new Intl.NumberFormat('pt-BR', {
             style: 'currency',
             currency: "BRL"
         }).format(total)}*`
@@ -105,9 +105,6 @@ export const pedidos = {
             txt += infoPedido.complemento ==="" ? "%20%0A":`%20%0ACOMPLEMENTO:%20${infoPedido.complemento}`
             txt += `%20%0A`
         }
-
-        console.log(`https://api.whatsapp.com/send/?phone=5594988110021&text=${txt}&app_absent=0`);
-
 
         window.location.href = `https://api.whatsapp.com/send/?phone=5594988110021&text=${txt}&app_absent=0`
     }
