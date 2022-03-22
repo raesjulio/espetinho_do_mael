@@ -13,14 +13,23 @@ interface TBody {
         quantidade: Number
         nome_item: string
     }]
+    rua: string
+    complemento: string
+    numero: string
+    id_bairro: Number
 }
-type IPedido = [{
-    id: Number
-    created_at: string
-    id_pedido: string
-    delivery: boolean
+type TInfoPedido = {
+    nome_cliente: string
+    whatsapp: string
+    complemento: string
+    nome_rua: string
+    id_bairro: string
+    numero_casa: string
     id_forma_pagamento: string
-}]
+    entrega: boolean
+    total: Number
+
+}
 interface IRespostaCliente {
     id: Number
 }
@@ -33,8 +42,13 @@ export default async (request: NextApiRequest, response: NextApiResponse) => {
             nome_cliente,
             whatsapp,
             total,
-            id_itens
+            id_itens,
+            rua,
+            complemento,
+            numero,
+            id_bairro,
         } = request.body as TBody
+
         const obj = [{
             id_pedido: idPedido,
             delivery,
@@ -52,15 +66,21 @@ export default async (request: NextApiRequest, response: NextApiResponse) => {
             arrayItensPedidos.push({
                 id_pedido: idPedido,
                 quantidade: item.quantidade,
-                id_item: item.id_item, 
+                id_item: item.id_item,
                 nome_item: item.nome_item
             })
         })
-        const { data: dataItemPedido, error:errorItemPedidos } = await supabase
-            .from('item_pedido')
-            .insert(arrayItensPedidos)
-        console.log(dataItemPedido, errorItemPedidos);
-        
-        return response.status(200)
+        await supabase.from('item_pedido').insert(arrayItensPedidos)
+        if (delivery) {
+            const objEntrega =[{
+                id_pedido: idPedido,
+                rua,
+                complemento,
+                numero,
+                id_bairro,
+            }]
+            await supabase.from('detalhe_entrega').insert(objEntrega)
+        }
+        return response.status(200).json({ id: idRespostaCliente})
     }
 }

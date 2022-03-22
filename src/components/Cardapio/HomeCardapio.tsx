@@ -1,5 +1,5 @@
-import { ChangeEvent, SyntheticEvent, useEffect, useMemo, useState } from "react"
-import { Button, ButtonGroup, FloatingLabel, Form, FormControlProps, Modal, ToggleButton } from "react-bootstrap"
+import { ChangeEvent, DetailedHTMLProps, LabelHTMLAttributes, SyntheticEvent, useEffect, useMemo, useState } from "react"
+import { Button, FloatingLabel, Form, FormControlProps, Modal, ToggleButton } from "react-bootstrap"
 import styles from "./styles.module.scss"
 import { BsDashSquareFill, BsFillPlusSquareFill, BsFillTrashFill } from "react-icons/bs";
 import { AiOutlineShoppingCart } from "react-icons/ai";
@@ -23,6 +23,7 @@ interface List {
         }
     ]
 }
+
 type TProdudos = [{
     id: Number
     name: string
@@ -51,10 +52,31 @@ type TInfoPedido = {
     id_bairro: string
     numero_casa: string
     id_forma_pagamento: string
+    entrega: boolean
+    total: Number
+    nome_bairro: string
+    nome_pagamento: string
+    obs: string
 }
 interface IOnChangeInfoPedido {
     name: string
     value: string
+}
+const initialInfoPedido = () => {
+    return {
+        nome_cliente: "",
+        whatsapp: "",
+        complemento: "",
+        nome_rua: "",
+        id_bairro: "",
+        numero_casa: "",
+        id_forma_pagamento: "",
+        entrega: false,
+        total: 0,
+        nome_bairro: "",
+        nome_pagamento: "",
+        obs: ""
+    }
 }
 const initialValidaton = () => {
     return {
@@ -69,7 +91,7 @@ const initialValidaton = () => {
 export const HomeCardapio = (props: List) => {
 
     const { listProduct, listCategoria } = props
-    const [infoPedido, setInfoPedido] = useState<TInfoPedido>()
+    const [infoPedido, setInfoPedido] = useState<TInfoPedido>(initialInfoPedido)
     const [radioValue, setRadioValue] = useState<String>("")
     const [itensCarrinho, setItensCarrinhos] = useState<TProdudos[]>([])
     const [numeroPedidos, setNumeroPedidos] = useState(0)
@@ -118,17 +140,20 @@ export const HomeCardapio = (props: List) => {
             const total = itensCarrinho.reduce((total, item) => {
                 return total + (item["price"] * item["quantidade"]);
             }, 0)
+            setInfoPedido({ ...infoPedido, total })
             setPedido({ ...pedido, total })
+
             const qtdPedidos = itensCarrinho.length
             setNumeroPedidos(qtdPedidos)
         } else {
+            setInfoPedido({ ...infoPedido, total: 0 })
             setPedido({ ...pedido, total: 0 })
             setNumeroPedidos(0)
         }
     }, [itensCarrinho])
 
     const handleEntrega = () => {
-        setPedido({ ...pedido, entrega: !pedido.entrega })
+        setInfoPedido({ ...infoPedido, entrega: !infoPedido.entrega })
     }
 
     const adicionarItemCarrinho = (idComida: String) => {
@@ -210,7 +235,28 @@ export const HomeCardapio = (props: List) => {
 
         setInfoPedido({ ...infoPedido, [name]: value })
     }
-    const validacaoInfoPedido = useEffect(() => {
+    useEffect(() => {
+        if (infoPedido.id_bairro !== "" || infoPedido.id_forma_pagamento !== "") {
+            const nomeBairro = bairros.filter(item => {
+                if (item.id.toString() === infoPedido.id_bairro) {
+                    return item
+                }
+            })
+            const nomePagamento = formaPagamento.filter(item => {
+                if (item.id_forma_pagamento.toString() === infoPedido.id_forma_pagamento) {
+                    return item
+                }
+            })
+            setInfoPedido({
+                ...infoPedido,
+                nome_bairro: nomeBairro.length === 0 ? "" : nomeBairro[0]["nome"],
+                nome_pagamento: nomePagamento.length === 0 ? "" : nomePagamento[0]["nome_pagamento"]
+            })
+        }
+
+    }, [infoPedido.id_bairro, infoPedido.id_forma_pagamento])
+
+    useEffect(() => {
         let nome_cliente = false, whatsapp = false, id_forma_pagamento = false
         let enderecoAux = { nome_rua: false, numero_casa: false, id_bairro: false }
         if (infoPedido?.nome_cliente !== "") {
@@ -229,7 +275,7 @@ export const HomeCardapio = (props: List) => {
                 id_forma_pagamento = true
             }
         }
-        if (pedido.entrega === true) {
+        if (infoPedido.entrega === true) {
             Object.keys(enderecoAux).map(item => {
                 if (infoPedido[item] !== "" && infoPedido[item]?.length > 0) {
                     enderecoAux[item] = true
@@ -250,9 +296,9 @@ export const HomeCardapio = (props: List) => {
             ["numero_casa"]: enderecoAux.numero_casa,
         })
     }, [infoPedido])
-    console.log(infoPedido);
-    console.log(validacao);
 
+    console.log(infoPedido);
+    
     return (
         <section className={styles.containerCardapioHome}>
             <aside>
@@ -361,52 +407,64 @@ export const HomeCardapio = (props: List) => {
                                 </>
                             )
                         })}
+                        <FloatingLabel
+                            controlId="floatingBairro"
+                            label="Observação sobre o pedido?">
+
+                            <Form.Control
+                                    className="mb-3"
+                                type="text"
+                                name="obs"
+                                value={infoPedido?.obs}
+                                onChange={(e) => onChangeInfoPedido(e)}
+                                placeholder="Casa de esquina" />
+                        </FloatingLabel>
                         <div className={styles.containerEntregaTotal}>
-                            <section className={pedido.entrega ? styles.active : ""}>
+                            <section className={infoPedido.entrega ? styles.active : ""}>
                                 <Form.Check
                                     type="checkbox"
                                     id={`default-checkbox`}
                                     label="PARA ENTREGA?"
-                                    checked={pedido.entrega}
+                                    checked={infoPedido.entrega}
                                     onChange={handleEntrega}
                                 />
 
                             </section>
                             <div className={styles.containerTotal}>
                                 <section>
-                                <FloatingLabel controlId="floatingPagamento" label="Forma de pagamento">
-                                    <Form.Select 
-                                    required
-                                    value={infoPedido?.id_forma_pagamento}
-                                    isInvalid={!validacao.id_forma_pagamento}
-                                    isValid={validacao.id_forma_pagamento}
-                                    name="id_forma_pagamento"
-                                    onChange={(e) => onChangeInfoPedido(e)}
-                                    aria-label="opções">
-                                        <option value="">-</option>
-                                       {
-                                           formaPagamento.map(item=>{
-                                               return <option value={item.id_forma_pagamento}>{item.nome_pagamento}</option>
-                                           })
-                                       }
-                                    </Form.Select>
-                                    <Form.Control.Feedback type="invalid">
-                                        insira a forma de pagamento
-                                    </Form.Control.Feedback>
-                                </FloatingLabel>
+                                    <FloatingLabel controlId="floatingPagamento" label="Forma de pagamento">
+                                        <Form.Select
+                                            required
+                                            value={infoPedido?.id_forma_pagamento}
+                                            isInvalid={!validacao.id_forma_pagamento}
+                                            isValid={validacao.id_forma_pagamento}
+                                            name="id_forma_pagamento"
+                                            onChange={(e) => onChangeInfoPedido(e)}
+                                            aria-label="opções">
+                                            <option value="">-</option>
+                                            {
+                                                formaPagamento.map(item => {
+                                                    return <option value={item.id_forma_pagamento}>{item.nome_pagamento}</option>
+                                                })
+                                            }
+                                        </Form.Select>
+                                        <Form.Control.Feedback type="invalid">
+                                            insira a forma de pagamento
+                                        </Form.Control.Feedback>
+                                    </FloatingLabel>
                                 </section>
                                 <aside>
-                                <div>
-                                    <h2>TOTAL </h2>
-                                    <label>{new Intl.NumberFormat('pt-BR', {
-                                        style: 'currency',
-                                        currency: "BRL"
-                                    }).format(pedido.total / 100)}</label>
-                                </div>
+                                    <div>
+                                        <h2>TOTAL </h2>
+                                        <label>{new Intl.NumberFormat('pt-BR', {
+                                            style: 'currency',
+                                            currency: "BRL"
+                                        }).format(pedido.total / 100)}</label>
+                                    </div>
                                 </aside>
                             </div>
                         </div>
-                        {pedido.entrega && <div className={styles.containerInfoEndereco}>
+                        {infoPedido.entrega && <div className={styles.containerInfoEndereco}>
                             <div>
                                 <FloatingLabel
                                     controlId="floatingRua"
