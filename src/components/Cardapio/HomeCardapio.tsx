@@ -1,10 +1,11 @@
-import { SyntheticEvent, useEffect, useMemo, useState } from "react"
-import { Button, ButtonGroup, FloatingLabel, Form, Modal, ToggleButton } from "react-bootstrap"
+import { ChangeEvent, SyntheticEvent, useEffect, useMemo, useState } from "react"
+import { Button, ButtonGroup, FloatingLabel, Form, FormControlProps, Modal, ToggleButton } from "react-bootstrap"
 import styles from "./styles.module.scss"
 import { BsDashSquareFill, BsFillPlusSquareFill, BsFillTrashFill } from "react-icons/bs";
 import { AiOutlineShoppingCart } from "react-icons/ai";
 import { Vazio } from "../Vazio/Vazio";
 import MaskedInput from "react-maskedinput";
+import { pedidos } from "../../utils/pedidos";
 interface List {
     listProduct: [{
         id: Number
@@ -35,20 +36,68 @@ type TCategorias = [{
     id_category: Number;
     name: String
 }]
+type TPedido = [{
+    total: Number;
+    delivery: boolean;
+    delivery_datails: [];
+    id_pedido: string;
+
+}]
+type TInfoPedido = {
+    nome_cliente: string
+    whatsapp: string
+    complemento: string
+    nome_rua: string
+    id_bairro: string
+    numero_casa: string
+    id_forma_pagamento: string
+}
+interface IOnChangeInfoPedido {
+    name: string
+    value: string
+}
+const initialValidaton = () => {
+    return {
+        nome_cliente: false,
+        whatsapp: false,
+        nome_rua: false,
+        id_bairro: false,
+        numero_casa: false,
+        id_forma_pagamento: false
+    }
+}
 export const HomeCardapio = (props: List) => {
 
     const { listProduct, listCategoria } = props
-
+    const [infoPedido, setInfoPedido] = useState<TInfoPedido>()
     const [radioValue, setRadioValue] = useState<String>("")
     const [itensCarrinho, setItensCarrinhos] = useState<TProdudos[]>([])
     const [numeroPedidos, setNumeroPedidos] = useState(0)
     const [show, setShow] = useState(false);
     const [itensComida, setItensComida] = useState([])
+    const [validacao, setValidacao] = useState(initialValidaton)
     const [itensComidaBackup, setItensComidaBackup] = useState([])
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
     const [categorias, setCategorias] = useState([])
-    const [pedido, setPedido] = useState({ total: 0 })
+    const [pedido, setPedido] = useState({ total: 0, entrega: false })
+    const bairros = [
+        { id: 11, nome: "Centro" },
+        { id: 24, nome: "Caverinha" },
+        { id: 35, nome: "Cidade Nova" },
+        { id: 42, nome: "Primavera" },
+        { id: 87, nome: "Murici" },
+        { id: 140, nome: "Vitoria" },
+        { id: 63, nome: "Mutirão" },
+        { id: 171, nome: "Bairro Novo" },
+        { id: 211, nome: "12 de outubro" },
+    ]
+    const formaPagamento = [
+        { id_forma_pagamento: 10, nome_pagamento: "Credito" },
+        { id_forma_pagamento: 11, nome_pagamento: "Debito" },
+        { id_forma_pagamento: 20, nome_pagamento: "Dinheiro" },
+        { id_forma_pagamento: 21, nome_pagamento: "PIX" },
+    ]
     useEffect(() => {
         setItensComida(listProduct)
     }, [listProduct])
@@ -63,27 +112,28 @@ export const HomeCardapio = (props: List) => {
         }
         setCategorias(listCategoria)
     }, [listCategoria])
+
     useMemo(() => {
         if (itensCarrinho.length > 0) {
             const total = itensCarrinho.reduce((total, item) => {
                 return total + (item["price"] * item["quantidade"]);
             }, 0)
-            console.log(total);
-
-            setPedido({ total })
-
+            setPedido({ ...pedido, total })
             const qtdPedidos = itensCarrinho.length
             setNumeroPedidos(qtdPedidos)
         } else {
-            setPedido({ total: 0 })
+            setPedido({ ...pedido, total: 0 })
             setNumeroPedidos(0)
         }
     }, [itensCarrinho])
 
+    const handleEntrega = () => {
+        setPedido({ ...pedido, entrega: !pedido.entrega })
+    }
 
     const adicionarItemCarrinho = (idComida: String) => {
         const validacao = itensCarrinho.some(item => {
-            if (item['id'] === idComida) {
+            if (item['id_item'] === idComida) {
                 return true
             } else {
                 return false
@@ -93,7 +143,7 @@ export const HomeCardapio = (props: List) => {
             return
         }
         let addCarrinho = itensComida.filter(item => {
-            if (item.id === idComida) {
+            if (item.id_item === idComida) {
                 return item
             }
         })
@@ -101,45 +151,21 @@ export const HomeCardapio = (props: List) => {
         addCarrinho[0].quantidade = 1
         setItensCarrinhos([...itensCarrinho, addCarrinho[0]])
     }
-    const handlePedido = () => {
-        let txt = "Pedido:", total = 0
-        txt += `%20%0A`
-        itensCarrinho.forEach(item => {
-            txt += `%20%0A${item["quantidade"]}x%20${item["name"]}%20%20`
-            txt += `----%20%20%20${new Intl.NumberFormat('pt-BR', {
-                style: 'currency',
-                currency: "BRL"
-            }).format((item["price"] / 100) * item["quantidade"])}`
-            total += (item["price"] / 100) * item["quantidade"]
-        })
-        txt += `%20%0A`
-        txt += `%20%0ATOTAL:${new Intl.NumberFormat('pt-BR', {
-            style: 'currency',
-            currency: "BRL"
-        }).format(total)} `
 
-        window.location.href = `https://api.whatsapp.com/send/?phone=5594988110021&text=${txt}&app_absent=0`
-    }
     const adicionarQuantidadeCarrinho = (idComida: string) => {
         let itensCarrinhosAux = itensCarrinho.map(item => item);
         itensCarrinhosAux.forEach((item, index) => {
-            if (item['id'] === idComida) {
+            if (item['id_item'] === idComida) {
                 itensCarrinhosAux[index]['quantidade'] += 1
             }
         })
         setItensCarrinhos(itensCarrinhosAux)
     }
-    const calcularToTal = () => {
-        let total = 0
-        itensCarrinho.forEach(item => {
-            console.log(item);
 
-        })
-    }
     const removerQuantidadeCarrinho = (idComida: string) => {
         let itensCarrinhosAux = itensCarrinho.map(item => item);
         const validacao = itensCarrinho.some((item, index) => {
-            if (item['id'] === idComida) {
+            if (item['id_item'] === idComida) {
                 if (itensCarrinho[index]['quantidade'] <= 1) {
                     return false
                 } else {
@@ -151,7 +177,7 @@ export const HomeCardapio = (props: List) => {
             return
         }
         itensCarrinhosAux.forEach((item, index) => {
-            if (item['id'] === idComida) {
+            if (item['id_item'] === idComida) {
                 itensCarrinhosAux[index]['quantidade'] -= 1
             }
         })
@@ -160,7 +186,7 @@ export const HomeCardapio = (props: List) => {
     const removeItemCarrinho = (idComida: string) => {
         let itensCarrinhosAux = itensCarrinho.map(item => item);
         const arrayAux = itensCarrinhosAux.filter((item, index, array) => {
-            if (item['id'] !== idComida) {
+            if (item['id_item'] !== idComida) {
                 return item
             }
         })
@@ -179,6 +205,54 @@ export const HomeCardapio = (props: List) => {
         })
         setItensComida(itensFiltrados)
     }
+    const onChangeInfoPedido = (event: ChangeEvent<FormControlProps | unknown>) => {
+        const { name, value } = event.currentTarget as HTMLInputElement
+
+        setInfoPedido({ ...infoPedido, [name]: value })
+    }
+    const validacaoInfoPedido = useEffect(() => {
+        let nome_cliente = false, whatsapp = false, id_forma_pagamento = false
+        let enderecoAux = { nome_rua: false, numero_casa: false, id_bairro: false }
+        if (infoPedido?.nome_cliente !== "") {
+            if (infoPedido?.nome_cliente?.length > 0) {
+
+                nome_cliente = true
+            }
+        }
+        if (infoPedido?.whatsapp !== "") {
+            if (infoPedido?.whatsapp?.replace(/[^0-9]/g, '')?.length > 10) {
+                whatsapp = true
+            }
+        }
+        if (infoPedido?.id_forma_pagamento !== "") {
+            if (infoPedido?.id_forma_pagamento?.length > 0) {
+                id_forma_pagamento = true
+            }
+        }
+        if (pedido.entrega === true) {
+            Object.keys(enderecoAux).map(item => {
+                if (infoPedido[item] !== "" && infoPedido[item]?.length > 0) {
+                    enderecoAux[item] = true
+                }
+            })
+        } else {
+            Object.keys(enderecoAux).map(item => {
+                enderecoAux[item] = false
+            })
+        }
+        return setValidacao({
+            ...validacao,
+            whatsapp,
+            nome_cliente,
+            id_forma_pagamento,
+            ["nome_rua"]: enderecoAux.nome_rua,
+            ["id_bairro"]: enderecoAux.id_bairro,
+            ["numero_casa"]: enderecoAux.numero_casa,
+        })
+    }, [infoPedido])
+    console.log(infoPedido);
+    console.log(validacao);
+
     return (
         <section className={styles.containerCardapioHome}>
             <aside>
@@ -204,7 +278,7 @@ export const HomeCardapio = (props: List) => {
                 {
                     itensComida.map(item => {
                         return (
-                            <div className={styles.itemComida} key={item.id}>
+                            <div className={styles.itemComida} key={item.id_item}>
                                 <img src={item.image} alt={item.name} />
                                 <aside>
                                     <div>
@@ -217,7 +291,7 @@ export const HomeCardapio = (props: List) => {
                                     <p>
                                         {item.description}
                                     </p>
-                                    <button value={item.id} type="button" onClick={() => adicionarItemCarrinho(item.id)}>Adicionar</button>
+                                    <button value={item.id_item} type="button" onClick={() => adicionarItemCarrinho(item.id_item)}>Adicionar</button>
                                 </aside>
                             </div>
                         )
@@ -231,10 +305,8 @@ export const HomeCardapio = (props: List) => {
                         <AiOutlineShoppingCart />
                         Carrinho  <span>{numeroPedidos}</span>
                     </button>
-
                 </div>
                 : ""}
-
             <>
                 <Modal
                     show={show}
@@ -265,22 +337,22 @@ export const HomeCardapio = (props: List) => {
                                             </div>
                                             <aside>
                                                 <div>
-                                                    <button onClick={() => removerQuantidadeCarrinho(itensCarrinho[item].id)}>
+                                                    <button onClick={() => removerQuantidadeCarrinho(itensCarrinho[item].id_item)}>
                                                         <BsDashSquareFill className={styles.remove} />
                                                     </button>
                                                     <input disabled type="text" value={itensCarrinho[item].quantidade} />
-                                                    <button onClick={() => adicionarQuantidadeCarrinho(itensCarrinho[item].id)}>
+                                                    <button onClick={() => adicionarQuantidadeCarrinho(itensCarrinho[item].id_item)}>
                                                         <BsFillPlusSquareFill className={styles.add} />
                                                     </button>
                                                 </div>
-                                                <h3>{new Intl.NumberFormat('pt-BR', {
+                                                <h4>{new Intl.NumberFormat('pt-BR', {
                                                     style: 'currency',
                                                     currency: "BRL"
-                                                }).format((itensCarrinho[item].price * itensCarrinho[item].quantidade) / 100)}</h3>
+                                                }).format((itensCarrinho[item].price * itensCarrinho[item].quantidade) / 100)}</h4>
 
 
                                             </aside>
-                                            <a onClick={() => removeItemCarrinho(itensCarrinho[item].id)}>
+                                            <a onClick={() => removeItemCarrinho(itensCarrinho[item].id_item)}>
                                                 <BsFillTrashFill /> Remover
                                             </a>
                                         </section>
@@ -290,42 +362,157 @@ export const HomeCardapio = (props: List) => {
                             )
                         })}
                         <div className={styles.containerEntregaTotal}>
-                            <section>
+                            <section className={pedido.entrega ? styles.active : ""}>
                                 <Form.Check
                                     type="checkbox"
                                     id={`default-checkbox`}
                                     label="PARA ENTREGA?"
+                                    checked={pedido.entrega}
+                                    onChange={handleEntrega}
                                 />
 
                             </section>
                             <div className={styles.containerTotal}>
+                                <section>
+                                <FloatingLabel controlId="floatingPagamento" label="Forma de pagamento">
+                                    <Form.Select 
+                                    required
+                                    value={infoPedido?.id_forma_pagamento}
+                                    isInvalid={!validacao.id_forma_pagamento}
+                                    isValid={validacao.id_forma_pagamento}
+                                    name="id_forma_pagamento"
+                                    onChange={(e) => onChangeInfoPedido(e)}
+                                    aria-label="opções">
+                                        <option value="">-</option>
+                                       {
+                                           formaPagamento.map(item=>{
+                                               return <option value={item.id_forma_pagamento}>{item.nome_pagamento}</option>
+                                           })
+                                       }
+                                    </Form.Select>
+                                    <Form.Control.Feedback type="invalid">
+                                        insira a forma de pagamento
+                                    </Form.Control.Feedback>
+                                </FloatingLabel>
+                                </section>
+                                <aside>
                                 <div>
                                     <h2>TOTAL </h2>
-                                    <h2>{new Intl.NumberFormat('pt-BR', {
+                                    <label>{new Intl.NumberFormat('pt-BR', {
                                         style: 'currency',
                                         currency: "BRL"
-                                    }).format(pedido.total / 100)}</h2>
+                                    }).format(pedido.total / 100)}</label>
                                 </div>
+                                </aside>
                             </div>
                         </div>
+                        {pedido.entrega && <div className={styles.containerInfoEndereco}>
+                            <div>
+                                <FloatingLabel
+                                    controlId="floatingRua"
+                                    label="Insira o nome da rua"
+                                    className="mb-3"
+                                >
+                                    <Form.Control
+                                        className={styles.inputLarguraMax}
+                                        type="text"
+                                        value={infoPedido?.nome_rua}
+                                        required
+                                        isInvalid={!validacao.nome_rua}
+                                        isValid={validacao.nome_rua}
+                                        onChange={(e) => onChangeInfoPedido(e)}
+                                        name="nome_rua"
+                                        placeholder="14 de julho" />
+                                </FloatingLabel>
+                                <FloatingLabel
+                                    controlId="floatingNumero"
+                                    label="Numero">
+                                    <Form.Control
+                                        type="text"
+                                        value={infoPedido?.numero_casa}
+                                        required
+                                        isInvalid={!validacao.numero_casa}
+                                        isValid={validacao.numero_casa}
+                                        onChange={(e) => onChangeInfoPedido(e)}
+                                        name="numero_casa"
+                                        placeholder="45" />
+                                </FloatingLabel>
+                            </div>
+                            <div>
+                                <FloatingLabel
+                                    className="mb-3"
+                                    controlId="floatingComplemento"
+                                    label="Bairro">
+                                    <Form.Select
+                                        value={infoPedido?.id_bairro}
+                                        aria-label="Floating label select example"
+                                        onChange={(e) => onChangeInfoPedido(e)}
+                                        required
+                                        isInvalid={!validacao.id_bairro}
+                                        isValid={validacao.id_bairro}
+                                        name="id_bairro">
+                                        <option value="">selecione um bairro</option>
+                                        {
+                                            bairros.map(item => {
+                                                return <option value={item.id}>{item.nome}</option>
+                                            })
+                                        }
 
+                                    </Form.Select>
+                                    <FloatingLabel
+                                        controlId="floatingBairro"
+                                        label="Complemento">
+                                        <Form.Control
+                                            type="text"
+                                            name="complemento"
+                                            value={infoPedido?.complemento}
+                                            onChange={(e) => onChangeInfoPedido(e)}
+                                            placeholder="Casa de esquina" />
+                                    </FloatingLabel>
+
+                                </FloatingLabel>
+                            </div>
+                        </div>}
 
                         <div className={styles.containerInfoPedido}>
-                            <FloatingLabel
-                                controlId="floatingNomeCliente"
-                                label="Seu nome"
-                                className="mb-3"
-                            >
-                                <Form.Control type="text" placeholder="João" />
-                            </FloatingLabel>
-                            <FloatingLabel
-                                controlId="floatingNumeroWhatsapp"
-                                label="Whatsapp">
-                                <Form.Control as={MaskedInput}
-                                    mask="(11)11111-1111"
-                                    type="text"
-                                    placeholder="(94)99999-9999" />
-                            </FloatingLabel>
+                            <Form.Group>
+
+                                <FloatingLabel
+                                    controlId="floatingNomeCliente"
+                                    label="Seu nome"
+                                    className="mb-3"
+                                >
+                                    <Form.Control
+                                        type="text"
+                                        onChange={onChangeInfoPedido}
+                                        required
+                                        isInvalid={!validacao.nome_cliente}
+                                        isValid={validacao.nome_cliente}
+                                        name="nome_cliente"
+                                        value={infoPedido?.nome_cliente ? infoPedido?.nome_cliente : ""}
+                                        placeholder="João" />
+                                    <Form.Control.Feedback type="invalid">
+                                        Por favor insira seu nome
+                                    </Form.Control.Feedback>
+                                </FloatingLabel>
+                                <FloatingLabel
+                                    controlId="floatingNumeroWhatsapp"
+                                    label="Whatsapp">
+                                    <Form.Control as={MaskedInput}
+                                        mask="(11)11111-1111"
+                                        value={infoPedido?.whatsapp ? infoPedido?.whatsapp : ""}
+                                        type="text"
+                                        required
+                                        isInvalid={!validacao.whatsapp}
+                                        isValid={validacao.whatsapp}
+                                        onChange={onChangeInfoPedido}
+                                        name="whatsapp"
+                                        placeholder="(94)99999-9999" />
+                                    <Form.Control.Feedback type="invalid">
+                                        Por favor insira seu numero do Whatsapp
+                                    </Form.Control.Feedback>
+                                </FloatingLabel>
+                            </Form.Group>
 
                         </div>
                     </Modal.Body>
@@ -333,7 +520,7 @@ export const HomeCardapio = (props: List) => {
                         <Button variant="secondary" onClick={handleClose}>
                             Close
                         </Button>
-                        <Button variant="success" onClick={handlePedido}>Finalizar Pedido</Button>
+                        <Button type="submit" variant="success" onClick={(e) => pedidos.handlePedido(itensCarrinho, infoPedido, e, validacao)}>Finalizar Pedido</Button>
                     </Modal.Footer>
                 </Modal>
             </>
