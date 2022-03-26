@@ -1,0 +1,95 @@
+.containerCard {
+  margin: 1rem;
+  border-radius: 0.24rem;
+  border: 1px solid white;
+  section {
+    background: #e91e62;
+    > div {
+      padding: 2rem 1rem 0.5rem 1rem;
+      >ul{
+          li{
+              
+            font-size: 1.5rem;
+            label{
+            font-family: "Poppins", sans-serif;
+
+                font-weight: bold;
+            }
+          }
+      }
+      > label{
+        position: absolute;
+        border: 2px solid #fff;
+        box-sizing: border-box;
+        background-color: #198a31;
+        color: #fff;
+        height: 3rem;
+        display: inline-flex;
+        padding: 0 1rem;
+        justify-content: center;
+        align-items: center;
+        text-transform: uppercase;
+      }
+      >  div {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 1rem;
+        button {
+            position: absolute;
+          align-items: center;
+          background-color: var(--finalizar);
+          border: 2px solid #000;
+          box-sizing: border-box;
+          color: #000;
+          cursor: pointer;
+          display: inline-flex;
+          fill: #000;
+          font-family: Inter, sans-serif;
+          font-size: 16px;
+          font-weight: 600;
+          height: 3rem;
+          justify-content: center;
+          letter-spacing: -0.8px;
+          line-height: 24px;
+          min-width: 95px;
+          outline: 0;
+          padding: 0 1rem;
+          text-align: center;
+          text-decoration: none;
+          transition: all 0.3s;
+          user-select: none;
+          -webkit-user-select: none;
+          touch-action: manipulation;
+        }
+      }
+    }
+  }
+  > div {
+    background: white;
+    display: flex;
+    color: black;
+    > div {
+      width: 100%;
+      padding-left: 1rem;
+      h1 {
+        font-family: "Poppins", sans-serif;
+        margin-bottom: 0;
+        padding-top: 1rem;
+        font-weight: bold;
+        //   text-align: center;
+      }
+    }
+   
+    > aside {
+      display: flex;
+      align-items: flex-end;
+      justify-content: flex-end;
+      width: 100%;
+      h6 {
+        text-align: end;
+        font-weight: bold;
+        padding-right: 1rem;
+      }
+    }
+  }
+}

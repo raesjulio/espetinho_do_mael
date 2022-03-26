@@ -296,9 +296,6 @@ export const HomeCardapio = (props: List) => {
             ["numero_casa"]: enderecoAux.numero_casa,
         })
     }, [infoPedido])
-
-    console.log(infoPedido);
-
     return (
         <section className={styles.containerCardapioHome}>
             <aside>
@@ -574,7 +571,7 @@ export const HomeCardapio = (props: List) => {
                     </Modal.Body>
                     <Modal.Footer>
                         <Button variant="secondary" onClick={handleClose}>
-                            Close
+                            Fechar
                         </Button>
                         <Button type="submit" variant="success" onClick={(e) => pedidos.handlePedido(itensCarrinho, infoPedido, e, validacao)}>Finalizar Pedido</Button>
                     </Modal.Footer>

@@ -55,7 +55,8 @@ export default async (request: NextApiRequest, response: NextApiResponse) => {
             id_forma_pagamento,
             nome_cliente,
             whatsapp,
-            total
+            total,
+            status: 1
         }]
         const { data: dataPedidos, error: errorPedidos } = await supabase
             .from('pedido')

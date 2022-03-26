@@ -1,0 +1,121 @@
+import { RealtimeSubscription } from '@supabase/supabase-js'
+import React, { useCallback, useEffect, useState } from 'react'
+import { Alert } from 'react-bootstrap'
+import { api } from '../../utils/api'
+import { supabase } from '../../utils/supabase'
+import { ModalInfo } from '../Modal/ModalInfo'
+import styles from "./styles.module.scss"
+interface ISupabasePedido {
+  new: {}
+}
+export type TArrayPedidos = {
+  created_at: Date
+  delivery: boolean
+  id: Number
+  id_forma_pagamento: Number
+  id_pedido: string
+  nome_cliente: string
+  total: Number
+  whatsapp: string
+  status: Number
+  item_pedido: [
+    {
+      id_item: Number,
+      quantidade: Number,
+      nome_item: string
+    }]
+}
+export const HomePedidos = () => {
+  const [novoPedido, setNovoPedido] = useState<TArrayPedidos[]>([])
+  const [showModalInfo, setShowModalInfo] = useState(false)
+  const [itemModal, setItemModal] = useState<TArrayPedidos | null>()
+  const [pedidosBuscadosInicial, setPedidosBuscadosInicial] = useState<TArrayPedidos[]>([])
+  useEffect(() => {
+    buscarPedidos()
+    supabase
+      .from('pedido')
+      .on('INSERT', payload => {
+        setNovoPedido([payload.new]);
+      }).subscribe()
+  }, [])
+  const buscarPedidos = useCallback(async () => {
+    const response = await api.get("buscarpedidos", { params: { id_status: 1 } })
+    const pedidosAux : TArrayPedidos[] = response.data.map(item => item)
+    pedidosAux.sort((a, b) => {
+      if (a.id < b.id) {
+        return 1;
+      }
+      if (a.id > b.id) {
+        return -1;
+      }
+      return 0;
+    })
+    setPedidosBuscadosInicial(pedidosAux)
+  }, [])
+  useEffect(() => {
+
+    if (novoPedido.length > 0) {
+      buscaInfoNovoPedido()
+    }
+  }, [novoPedido])
+  const buscaInfoNovoPedido = async () => {
+    const response = await api.get("buscaritempedido", { params: { id_pedido: novoPedido[0].id_pedido } })
+    const pedidosAux = pedidosBuscadosInicial.map(item => item)
+    pedidosAux.sort((a, b) => {
+      if (a.id > b.id) {
+        return 1;
+      }
+      if (a.id < b.id) {
+        return -1;
+      }
+      return 0;
+    })
+    setPedidosBuscadosInicial([response.data[0], ...pedidosBuscadosInicial])
+  }
+  const handleClickShowModal = (item: TArrayPedidos)=>{
+    setItemModal(item)
+    setShowModalInfo(!showModalInfo)
+  }
+ 
+  return (
+    <div>
+      {pedidosBuscadosInicial.map(item => {
+        return (<>
+          <div className={styles.containerCard} key={item.id_pedido}>
+            <section key={item.id_pedido}>
+              <div>
+                <ul>
+                  {item.item_pedido.map(evt => {
+                    return <li key={evt.nome_item}>{evt.quantidade} x <label>{evt.nome_item}</label></li>
+                  })}
+                </ul>
+                
+                {item.delivery === true&&<label>Para entrega</label>}
+                <div key={item.id_pedido}>
+                 
+                  <button onClick={() => handleClickShowModal(item)}>Info</button>
+                </div>
+              </div>
+            </section>
+            <div >
+              <div >
+                <h1>Pedido - {item.id}</h1>
+
+                <h3>{item.nome_cliente}</h3>
+              </div>
+              <aside >
+                <h6>{item.created_at.toLocaleString().slice(11, 16)}</h6>
+              </aside>
+            </div>
+          </div>
+        </>
+        )
+      })}
+      {showModalInfo && <ModalInfo
+        showModalInfo={showModalInfo}
+        setShowModalInfo={setShowModalInfo}
+        itemModal={itemModal}
+      />}
+    </div>
+  )
+}
