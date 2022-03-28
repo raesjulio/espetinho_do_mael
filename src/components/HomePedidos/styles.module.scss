@@ -2,22 +2,22 @@
   margin: 1rem;
   border-radius: 0.24rem;
   border: 1px solid white;
-  section {
-    background: #e91e62;
+  max-width: 29rem;
+  // display: block !important;
+  > section {
     > div {
       padding: 2rem 1rem 0.5rem 1rem;
-      >ul{
-          li{
-              
-            font-size: 1.5rem;
-            label{
+      > ul {
+        li {
+          font-size: 1.5rem;
+          label {
             font-family: "Poppins", sans-serif;
 
-                font-weight: bold;
-            }
+            font-weight: bold;
           }
+        }
       }
-      > label{
+      > label {
         position: absolute;
         border: 2px solid #fff;
         box-sizing: border-box;
@@ -30,12 +30,12 @@
         align-items: center;
         text-transform: uppercase;
       }
-      >  div {
+      > div {
         display: flex;
         justify-content: flex-end;
-        margin-bottom: 1rem;
+        margin-bottom: 1.5rem;
         button {
-            position: absolute;
+          position: absolute;
           align-items: center;
           background-color: var(--finalizar);
           border: 2px solid #000;
@@ -79,7 +79,7 @@
         //   text-align: center;
       }
     }
-   
+
     > aside {
       display: flex;
       align-items: flex-end;
@@ -91,5 +91,29 @@
         padding-right: 1rem;
       }
     }
+  }
+}
+.containerCheck {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem 0 0 0;
+  > input {
+    display: none;
+  }
+  > label {
+    padding: 0.2rem 0.4rem;
+    border: 1px solid white;
+  }
+  .checked {
+    background: #fff;
+    color: #000;
+  }
+}
+.container{
+  >div{
+    display: inline-grid;
+
   }
 }

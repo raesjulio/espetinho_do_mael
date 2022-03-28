@@ -1,4 +1,4 @@
-import { HomePedidos } from "../components/HomePedidos/HomePedidos";
+import { HomePedidos } from "../../components/HomePedidos/HomePedidos";
 
 export default function Pedidos() {
     return (

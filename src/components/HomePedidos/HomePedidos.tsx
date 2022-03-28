@@ -28,6 +28,7 @@ export type TArrayPedidos = {
 export const HomePedidos = () => {
   const [novoPedido, setNovoPedido] = useState<TArrayPedidos[]>([])
   const [showModalInfo, setShowModalInfo] = useState(false)
+  const [valueCheck, setValueCheck] = useState(1)
   const [itemModal, setItemModal] = useState<TArrayPedidos | null>()
   const [pedidosBuscadosInicial, setPedidosBuscadosInicial] = useState<TArrayPedidos[]>([])
   useEffect(() => {
@@ -36,11 +37,13 @@ export const HomePedidos = () => {
       .from('pedido')
       .on('INSERT', payload => {
         setNovoPedido([payload.new]);
+      }).on('UPDATE', payload => {
+        setNovoPedido([payload.new]);
       }).subscribe()
   }, [])
   const buscarPedidos = useCallback(async () => {
     const response = await api.get("buscarpedidos", { params: { id_status: 1 } })
-    const pedidosAux : TArrayPedidos[] = response.data.map(item => item)
+    const pedidosAux: TArrayPedidos[] = response.data.map(item => item)
     pedidosAux.sort((a, b) => {
       if (a.id < b.id) {
         return 1;
@@ -53,7 +56,6 @@ export const HomePedidos = () => {
     setPedidosBuscadosInicial(pedidosAux)
   }, [])
   useEffect(() => {
-
     if (novoPedido.length > 0) {
       buscaInfoNovoPedido()
     }
@@ -62,37 +64,74 @@ export const HomePedidos = () => {
     const response = await api.get("buscaritempedido", { params: { id_pedido: novoPedido[0].id_pedido } })
     const pedidosAux = pedidosBuscadosInicial.map(item => item)
     pedidosAux.sort((a, b) => {
-      if (a.id > b.id) {
+      if (a.id < b.id) {
         return 1;
       }
-      if (a.id < b.id) {
+      if (a.id > b.id) {
         return -1;
       }
       return 0;
     })
-    setPedidosBuscadosInicial([response.data[0], ...pedidosBuscadosInicial])
+
+
+    setPedidosBuscadosInicial([response.data[0], ...pedidosAux])
   }
-  const handleClickShowModal = (item: TArrayPedidos)=>{
+  const handleClickShowModal = (item: TArrayPedidos) => {
     setItemModal(item)
     setShowModalInfo(!showModalInfo)
   }
- 
+  const coresStatus = { "2": "#a2c243", "1": "#f3bf03", "3": "#055e9a" }
+  const statusCheck = [{
+    status: 1,
+    name_status: "Aberto"
+  }, {
+    status: 3,
+    name_status: "Em Preparo"
+  }, {
+    status: 2,
+    name_status: "Finalizado"
+  }]
+  const onChangeCheck = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const response = await api.get("buscarpedidos", { params: { id_status: e.target.value } })
+    setPedidosBuscadosInicial(response.data)
+    setValueCheck(parseInt(e.target.value))
+  }
+
   return (
-    <div>
+    <div className={styles.container}>
+      <aside className={styles.containerCheck}>
+        {statusCheck.map(item => {
+          return <>
+            <input
+              checked={valueCheck === item.status}
+              value={item.status}
+              type="checkbox"
+              name={item.name_status}
+              id={`checkbox` + item.status}
+              onChange={e => onChangeCheck(e)}
+            ></input>
+            <label className={valueCheck === item.status ? styles.checked : ""} htmlFor={`checkbox` + item.status}>{item.name_status}</label>
+          </>
+
+        })}
+      </aside>
       {pedidosBuscadosInicial.map(item => {
         return (<>
           <div className={styles.containerCard} key={item.id_pedido}>
-            <section key={item.id_pedido}>
+            <section key={item.id_pedido} style={{ background: coresStatus[item.status.toString()] }}>
               <div>
                 <ul>
                   {item.item_pedido.map(evt => {
                     return <li key={evt.nome_item}>{evt.quantidade} x <label>{evt.nome_item}</label></li>
                   })}
                 </ul>
-                
-                {item.delivery === true&&<label>Para entrega</label>}
+                <p>TOTAL - {new Intl.NumberFormat('pt-BR', {
+                  style: 'currency',
+                  currency: "BRL"
+                }).format(Number(item.total) / 100)}</p>
+                {item.delivery === true && <label>Para entrega</label>}
                 <div key={item.id_pedido}>
-                 
+
                   <button onClick={() => handleClickShowModal(item)}>Info</button>
                 </div>
               </div>

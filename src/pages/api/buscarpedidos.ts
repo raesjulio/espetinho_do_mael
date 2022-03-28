@@ -15,7 +15,7 @@ export default async (request: NextApiRequest, response: NextApiResponse) => {
         const { data, error } = await supabase
             .from('pedido')
             .select("*, item_pedido(id_item, quantidade, nome_item)")
-            .eq('status', id_status)
+            .eq('status', id_status).order('id', { ascending: false })
             if (data) {
                 return response.status(200).json(data)
             }else{
