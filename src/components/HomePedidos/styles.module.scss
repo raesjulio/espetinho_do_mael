@@ -2,7 +2,9 @@
   margin: 1rem;
   border-radius: 0.24rem;
   border: 1px solid white;
-  max-width: 29rem;
+
+  min-width: 25rem;
+  max-width: 25rem;
   // display: block !important;
   > section {
     > div {
@@ -74,7 +76,7 @@
       h1 {
         font-family: "Poppins", sans-serif;
         margin-bottom: 0;
-        padding-top: 1rem;
+        padding-top: 1.6rem;
         font-weight: bold;
         //   text-align: center;
       }
@@ -84,7 +86,7 @@
       display: flex;
       align-items: flex-end;
       justify-content: flex-end;
-      width: 100%;
+      // width: 100%;
       h6 {
         text-align: end;
         font-weight: bold;
@@ -103,17 +105,35 @@
     display: none;
   }
   > label {
-    padding: 0.2rem 0.4rem;
+    
+    border-radius: 2rem;
+    padding: 0.5rem .8rem;
     border: 1px solid white;
+    
   }
   .checked {
-    background: #fff;
-    color: #000;
+    
+    color: #fff;
   }
+ 
+  
 }
-.container{
-  >div{
-    display: inline-grid;
 
+.container {
+  display: flex;
+  justify-content: center;
+  >section{
+    display: grid;
+    align-items: center;
+    width: max-content;
+      grid-template-columns: 1fr 1fr 1fr;
+  
+    @media (max-width: 1300px) {
+      grid-template-columns: 1fr 1fr;
+    }
+    
+    @media (max-width: 818px) {
+      grid-template-columns: 1fr;
+    }
   }
 }
