@@ -19,6 +19,8 @@ export default async (request: NextApiRequest, response: NextApiResponse) => {
             if (data) {
                 return response.status(200).json(data)
             }else{
+                console.log(error);
+                
                 return response.status(400).json({error: "Erro ao buscas pedidos", e:error})
             }
         // const { data, error } = await supabase

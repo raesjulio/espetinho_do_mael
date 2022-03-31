@@ -7,11 +7,11 @@ interface IStatus {
     name_status: string,
     status: Number
 }
-export const ModalInfo = ({ showModalInfo, setShowModalInfo, itemModal }) => {
+export const ModalInfo = ({ showModalInfo, setShowModalInfo, itemModal, setCount }) => {
     const handleClose = () => setShowModalInfo(false);
     const handleShow = () => setShowModalInfo(true);
     const [optionsStatus, setOptionsStatus] = useState<IStatus[]>([])
-    const [valueStatusSelect, setValueStatusSelect]= useState<String>("")
+    const [valueStatusSelect, setValueStatusSelect] = useState<String>("")
     useEffect(() => {
         setValueStatusSelect(itemModal.status.toString())
         buscarStatus()
@@ -20,15 +20,18 @@ export const ModalInfo = ({ showModalInfo, setShowModalInfo, itemModal }) => {
         const { data, error } = await supabase.from("status").select('name_status, status')
         setOptionsStatus(data)
     }
-    
-    const mudarStatusPedido = async()=>{
-        if (valueStatusSelect === "") {
+
+    const mudarStatusPedido = async () => {
+        if (valueStatusSelect === "" || parseInt(valueStatusSelect.toString()) === itemModal.status) {
             return
         }
-        const {data, error}= await supabase.from("pedido").update({status: valueStatusSelect, update_at: "now()"}).match({id_pedido: itemModal.id_pedido})
+
+
+        const { data, error } = await supabase.from("pedido").update({ status: valueStatusSelect, update_at: "now()" }).match({ id_pedido: itemModal.id_pedido })
         if (data) {
             setShowModalInfo(false)
         }
+        setCount(1)
     }
     return (
         <div >
@@ -41,7 +44,7 @@ export const ModalInfo = ({ showModalInfo, setShowModalInfo, itemModal }) => {
                     {itemModal.nome_cliente}
 
                 </Modal.Body>
-                <select name="status" id="" value={valueStatusSelect.toString()} onChange={(e)=>setValueStatusSelect(e.target.value)}>
+                <select name="status" id="" value={valueStatusSelect.toString()} onChange={(e) => setValueStatusSelect(e.target.value)}>
                     {
                         optionsStatus.map(item => {
                             return <option value={item.status.toString()}>{item.name_status}</option>
@@ -49,7 +52,7 @@ export const ModalInfo = ({ showModalInfo, setShowModalInfo, itemModal }) => {
                     }
                 </select>
                 <button onClick={handleClose}>fechar</button>
-                <button onClick={()=>mudarStatusPedido()}>Mudar Status Pedido</button>
+                <button onClick={() => mudarStatusPedido()}>Mudar Status Pedido</button>
                 <Modal.Footer>
 
 

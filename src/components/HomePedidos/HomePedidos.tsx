@@ -1,5 +1,5 @@
 import { RealtimeSubscription } from '@supabase/supabase-js'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Alert } from 'react-bootstrap'
 import { useQuery } from 'react-query'
 import { api } from '../../utils/api'
@@ -30,6 +30,8 @@ export const HomePedidos = () => {
   const [novoPedido, setNovoPedido] = useState<TArrayPedidos[]>([])
   const [showModalInfo, setShowModalInfo] = useState(false)
   const [valueCheck, setValueCheck] = useState(1)
+  const [count, setCount] = useState(0)
+
   const [itemModal, setItemModal] = useState<TArrayPedidos | null>()
   const [pedidosBuscadosInicial, setPedidosBuscadosInicial] = useState<TArrayPedidos[]>([])
   useEffect(() => {
@@ -42,6 +44,20 @@ export const HomePedidos = () => {
         setNovoPedido([payload.new]);
       }).subscribe()
   }, [])
+
+  useEffect(() => {
+    if (count > 0) {
+      const arrayAux = pedidosBuscadosInicial.filter(item => {
+        if (item.id !== itemModal?.id) {
+          return item
+        }
+      })
+      setPedidosBuscadosInicial(arrayAux)
+      setCount(0)
+    }
+  }, [count, showModalInfo])
+
+
   const buscarPedidos = useCallback(async () => {
     const response = await api.get("buscarpedidos", { params: { id_status: 1 } })
     const pedidosAux: TArrayPedidos[] = response.data.map(item => item)
@@ -73,8 +89,6 @@ export const HomePedidos = () => {
       }
       return 0;
     })
-
-
     setPedidosBuscadosInicial([response.data[0], ...pedidosAux])
   }
   const handleClickShowModal = (item: TArrayPedidos) => {
@@ -114,9 +128,7 @@ export const HomePedidos = () => {
             <label
               style={
                 {
-                  background: valueCheck === item.status ? coresStatus[item.status]: "",
-                 
-
+                  background: valueCheck === item.status ? coresStatus[item.status] : "",
                 }
               }
               className={valueCheck === item.status ? styles.checked : ""}
@@ -129,47 +141,48 @@ export const HomePedidos = () => {
       </aside>
       <div className={styles.container}>
 
-       <section>
-       {pedidosBuscadosInicial.map(item => {
-          return (<>
-            <div className={styles.containerCard} key={item.id_pedido}>
-              <section key={item.id_pedido} style={{ background: coresStatus[item.status.toString()] }}>
-                <div>
-                  <ul style={{color: item.status === 1 ? "#000": "#FFF"}}>
-                    {item.item_pedido.map(evt => {
-                      return <li key={evt.nome_item}>{evt.quantidade} x <label>{evt.nome_item}</label></li>
-                    })}
-                  </ul>
-                  <p style={{color: item.status === 1 ? "#000": "#FFF"}}>TOTAL - {new Intl.NumberFormat('pt-BR', {
-                    style: 'currency',
-                    currency: "BRL"
-                  }).format(Number(item.total) / 100)}</p>
-                  {item.delivery === true && <label>Para entrega</label>}
-                  <div key={item.id_pedido}>
+        <section>
+          {pedidosBuscadosInicial.map(item => {
+            return (<>
+              <div className={styles.containerCard} key={item.id_pedido}>
+                <section key={item.id_pedido} style={{ background: coresStatus[item.status.toString()] }}>
+                  <div>
+                    <ul style={{ color: item.status === 1 ? "#000" : "#FFF" }}>
+                      {item.item_pedido.map(evt => {
+                        return <li key={evt.nome_item}>{evt.quantidade} x <label>{evt.nome_item}</label></li>
+                      })}
+                    </ul>
+                    <p style={{ color: item.status === 1 ? "#000" : "#FFF" }}>TOTAL - {new Intl.NumberFormat('pt-BR', {
+                      style: 'currency',
+                      currency: "BRL"
+                    }).format(Number(item.total) / 100)}</p>
+                    {item.delivery === true && <label>Para entrega</label>}
+                    <div key={item.id_pedido}>
 
-                    <button onClick={() => handleClickShowModal(item)}>Info</button>
+                      <button onClick={() => handleClickShowModal(item)}>Info</button>
+                    </div>
                   </div>
-                </div>
-              </section>
-              <div >
+                </section>
                 <div >
-                  <h1>Pedido - {item.id}</h1>
+                  <div >
+                    <h1>Pedido - {item.id}</h1>
 
-                  <h3>{item.nome_cliente}</h3>
+                    <h3>{item.nome_cliente}</h3>
+                  </div>
+                  <aside >
+                    <h6>{item.created_at.toLocaleString().slice(11, 16)}</h6>
+                  </aside>
                 </div>
-                <aside >
-                  <h6>{item.created_at.toLocaleString().slice(11, 16)}</h6>
-                </aside>
               </div>
-            </div>
-          </>
-          )
-        })}
-       </section>
+            </>
+            )
+          })}
+        </section>
         {showModalInfo && <ModalInfo
           showModalInfo={showModalInfo}
           setShowModalInfo={setShowModalInfo}
           itemModal={itemModal}
+          setCount={setCount}
         />}
       </div>
     </>
