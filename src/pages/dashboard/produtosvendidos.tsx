@@ -15,13 +15,17 @@ export default function ProdutosVendidos() {
     console.log(data);
     useEffect(() => {
         if (data) {
-            let arrayPrin =[]
+            let arrayPrin = []
             arrayPrin.push(["Produto", "Quantidade"])
-            const teste = data.map(item=>{
+            const teste = data.map(item => {
                 arrayPrin.push([item.nome_item, item.qtd])
-                return 
+                return
             })
-            
+            arrayPrin = arrayPrin.filter((item, index) => {
+                if (index < 11) {
+                    return item
+                }
+            })
             setProdutosVendidos(arrayPrin)
         }
     }, [data])
@@ -32,7 +36,7 @@ export default function ProdutosVendidos() {
         //     subtitle: "Based on most recent and previous census data",
         // },
         hAxis: {
-            title: "Produtos mais vendidos",
+            title: "Top 10 produtos mais vendidos",
             minValue: 0,
         },
         // vAxis: {
@@ -50,7 +54,6 @@ export default function ProdutosVendidos() {
     return (
         <>
             <div>
-
                 <Chart
                     chartType="BarChart"
                     width="100%"
