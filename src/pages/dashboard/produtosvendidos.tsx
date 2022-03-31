@@ -31,23 +31,11 @@ export default function ProdutosVendidos() {
     }, [data])
     const options = {
         legend: { position: "top" },
-        // chart: {
-        //     title: "Population of Largest U.S. Cities",
-        //     subtitle: "Based on most recent and previous census data",
-        // },
         hAxis: {
             title: "Top 10 produtos mais vendidos",
             minValue: 0,
         },
-        // vAxis: {
-        //     title: "City",
-        // },
         bars: "horizontal",
-        // axes: {
-        //     y: {
-        //         0: { side: "right" },
-        //     },
-        // },
         chartArea: { width: "50%" },
         bar: { groupWidth: "50%" },
     };
