@@ -1,6 +1,12 @@
 # espetinho_do_mael
 Modelo de aplicação de delivery.
-Aplicação é um prototipo, podendo ser implementa diversas funcionalidades principalmente para a parte de gestão de vendas.
+Aplicação é um prototipo, podendo ser implementa diversas funcionalidades principalmente para a parte de gestão de vendas como: 
+* Categoria mais vendida
+* Que horas mais vende
+* Que dia da semana mais vende
+* Qual a forma de pagamento mais aceita
+* Qual bairro compra mais
+* Qual a media do faturamento diario
 
 *aplicação possui*
 cardapio, pagina de controle de pedidos e pagina listando os 10 produtos mais vendidos.
